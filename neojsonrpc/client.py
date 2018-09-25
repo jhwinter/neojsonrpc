@@ -319,8 +319,8 @@ class Client:
     def validate_address(self, addr, **kwargs):
         """ Validates if the considered string is a valid NEO address.
 
-        :param hex: string containing a potential NEO address
-        :type hex: str
+        :param addr: string containing a potential NEO address
+        :type addr: str
         :return: dictionary containing the result of the verification
         :rtype: dictionary
 
@@ -345,17 +345,16 @@ class Client:
         payload = {'jsonrpc': '2.0', 'method': method, 'params': params, 'id': rid}
         headers = {'Content-Type': 'application/json'}
         scheme = 'https' if self.tls else 'http'
-        url = '{}://{}:{}'.format(scheme, self.host, self.port)
+        url = f'{scheme}://{self.host}:{self.port}'
+        response = ''  # setting this to an empty string to remove a warning message
 
         # Calls the JSON-RPC endpoint!
         try:
             response = self.session.post(url, headers=headers, data=json.dumps(payload))
             response.raise_for_status()
         except HTTPError:
-            raise TransportError(
-                'Got unsuccessful response from server (status code: {})'.format(
-                    response.status_code),
-                response=response)
+            raise TransportError(f'Got unsuccessful response from server (status code: {response.status_code}',
+                                 response=response)
 
         # Ensures the response body can be deserialized to JSON.
         try:
@@ -368,8 +367,7 @@ class Client:
         if response_data.get('error'):
             code = response_data['error'].get('code', '')
             message = response_data['error'].get('message', '')
-            raise ProtocolError(
-                'Error[{}] {}'.format(code, message), response=response, data=response_data)
+            raise ProtocolError(f'Error[{code}] {message}', response=response, data=response_data)
         elif 'result' not in response_data:
             raise ProtocolError(
                 'Response is empty (result field is missing)', response=response,
