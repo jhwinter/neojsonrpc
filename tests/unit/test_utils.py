@@ -93,3 +93,19 @@ class TestDecodeInvocationResultHelper:
                                       'value': bytearray(b'https://neo.org')}]}],
                 'state': 'HALT, BREAK',
                 'tx': '00000', }
+
+    def test_can_decode_integer_values(self):
+        result = {
+            'gas_consumed': '0.334',
+            'script': '00000',
+            'stack': [{'type': 'Integer', 'value': 4}],
+            'state': 'HALT, BREAK',
+            'tx': '00000',
+        }
+        assert decode_invocation_result(result) == \
+            {
+                'gas_consumed': '0.334',
+                'script': '00000',
+                'stack': [{'type': 'Integer', 'value': 4}],
+                'state': 'HALT, BREAK',
+                'tx': '00000', }

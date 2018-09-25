@@ -70,4 +70,6 @@ def _decode_invocation_result_stack(stack):
             value_dict['value'] = _decode_invocation_result_stack(value_dict['value'])
         elif value_dict['type'] == 'ByteArray':
             value_dict['value'] = bytearray(binascii.unhexlify(value_dict['value'].encode('utf-8')))
+        elif value_dict['type'] == 'Integer':
+            value_dict['value'] = value_dict['value']
     return stack
