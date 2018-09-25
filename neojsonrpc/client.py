@@ -38,12 +38,12 @@ class Client:
     @classmethod
     def for_mainnet(cls):
         """ Creates a ``Client`` instance for use with the NEO Main Net. """
-        return cls(host='seed1.cityofzion.io', port=8080)
+        return cls(host='seed1.ngd.network', port=10332)
 
     @classmethod
     def for_testnet(cls):
         """ Creates a ``Client`` instance for use with the NEO Test Net. """
-        return cls(host='test1.cityofzion.io', port=8880)
+        return cls(host='seed3.neo.org', port=20332)
 
     def contract(self, script_hash):
         """ Returns a ``ContractWrapper`` instance allowing to easily invoke contract functions.
@@ -120,8 +120,7 @@ class Client:
         :rtype: dict or str
 
         """
-        return self._call(
-            JSONRPCMethods.GET_BLOCK.value, params=[block_hash, int(verbose), ], **kwargs)
+        return self._call(JSONRPCMethods.GET_BLOCK.value, params=[block_hash, int(verbose), ], **kwargs)
 
     def get_block_count(self, **kwargs):
         """ Returns the number of blocks in the chain.
@@ -199,8 +198,7 @@ class Client:
         :rtype: dict or str
 
         """
-        return self._call(
-            JSONRPCMethods.GET_RAW_TRANSACTION.value, params=[tx_hash, int(verbose), ], **kwargs)
+        return self._call(JSONRPCMethods.GET_RAW_TRANSACTION.value, params=[tx_hash, int(verbose), ], **kwargs)
 
     def get_storage(self, script_hash, key, **kwargs):
         """ Returns the value stored in the storage of a contract script hash for a given key.
@@ -214,8 +212,7 @@ class Client:
 
         """
         hexkey = binascii.hexlify(key.encode('utf-8')).decode('utf-8')
-        hexresult = self._call(
-            JSONRPCMethods.GET_STORAGE.value, params=[script_hash, hexkey, ], **kwargs)
+        hexresult = self._call(JSONRPCMethods.GET_STORAGE.value, params=[script_hash, hexkey, ], **kwargs)
         try:
             assert hexresult
             result = bytearray(binascii.unhexlify(hexresult.encode('utf-8')))
@@ -270,8 +267,7 @@ class Client:
 
         """
         contract_params = encode_invocation_params(params)
-        raw_result = self._call(
-            JSONRPCMethods.INVOKE.value, [script_hash, contract_params, ], **kwargs)
+        raw_result = self._call(JSONRPCMethods.INVOKE.value, [script_hash, contract_params, ], **kwargs)
         return decode_invocation_result(raw_result)
 
     def invoke_function(self, script_hash, operation, params, **kwargs):
@@ -288,9 +284,8 @@ class Client:
 
         """
         contract_params = encode_invocation_params(params)
-        raw_result = self._call(
-            JSONRPCMethods.INVOKE_FUNCTION.value, [script_hash, operation, contract_params, ],
-            **kwargs)
+        raw_result = self._call(JSONRPCMethods.INVOKE_FUNCTION.value, [script_hash, operation, contract_params, ],
+                                **kwargs)
         return decode_invocation_result(raw_result)
 
     def invoke_script(self, script, **kwargs):
@@ -360,8 +355,7 @@ class Client:
         try:
             response_data = response.json()
         except ValueError as e:
-            raise ProtocolError(
-                'Unable to deserialize response body: {}'.format(e), response=response)
+            raise ProtocolError(f'Unable to deserialize response body: {e}', response=response)
 
         # Properly handles potential errors.
         if response_data.get('error'):
@@ -369,9 +363,7 @@ class Client:
             message = response_data['error'].get('message', '')
             raise ProtocolError(f'Error[{code}] {message}', response=response, data=response_data)
         elif 'result' not in response_data:
-            raise ProtocolError(
-                'Response is empty (result field is missing)', response=response,
-                data=response_data)
+            raise ProtocolError('Response is empty (result field is missing)', response=response, data=response_data)
 
         return response_data['result']
 

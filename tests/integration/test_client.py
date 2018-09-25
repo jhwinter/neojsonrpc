@@ -72,7 +72,7 @@ class TestClient:
         assert val == 100000000000
         assert not client.get_storage('34af1b6634fcd7cfcff0158965b18601d3837e32', 'dummyKey')
 
-    def test_can_return_the_transaction_ouyput_information_associated_with_a_hash_and_index(self):
+    def test_can_return_the_transaction_output_information_associated_with_a_hash_and_index(self):
         client = Client.for_testnet()
         txout = client.get_tx_out(
             '6ed78234b2d4ac886f4f6246a19d237be38d6541e59d87b547987778314bb7af', 0)
