@@ -98,7 +98,7 @@ class TestDecodeInvocationResultHelper:
         result = {
             'gas_consumed': '0.334',
             'script': '00000',
-            'stack': [{'type': 'Integer', 'value': 4}],
+            'stack': [{'type': 'Integer', 'value': '4'}],
             'state': 'HALT, BREAK',
             'tx': '00000',
         }

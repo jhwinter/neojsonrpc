@@ -45,7 +45,7 @@ class Client:
         """ Creates a ``Client`` instance for use with the NEO Test Net. """
         return cls(host='seed3.neo.org', port=20332)
 
-    def contract(self, script_hash):
+    def contract(self, script_hash, has_type):
         """ Returns a ``ContractWrapper`` instance allowing to easily invoke contract functions.
 
         This method allows to invoke smart contract functions as if they were Python class instance
@@ -65,7 +65,7 @@ class Client:
         :rtype: neojsonrpc.client.ContractWrapper
 
         """
-        return ContractWrapper(self, script_hash)
+        return ContractWrapper(self, script_hash, has_type)
 
     ####################
     # JSON-RPC METHODS #
@@ -252,7 +252,7 @@ class Client:
         """
         return self._call(JSONRPCMethods.GET_VERSION.value, **kwargs)
 
-    def invoke(self, script_hash, params, **kwargs):
+    def invoke(self, script_hash, has_type, params, **kwargs):
         """ Invokes a contract with given parameters and returns the result.
 
         It should be noted that the name of the function invoked in the contract should be part of
@@ -260,32 +260,38 @@ class Client:
 
         :param script_hash: contract script hash
         :param params: list of paramaters to be passed in to the smart contract
+        :param has_type: whether or not the type is included with the params
         :type script_hash: str
         :type params: list
+        :type has_type: str or int
         :return: result of the invocation
         :rtype: dictionary
 
         """
-        contract_params = encode_invocation_params(params)
+        contract_params = encode_invocation_params(has_type=has_type, params=params)
         raw_result = self._call(JSONRPCMethods.INVOKE.value, [script_hash, contract_params, ], **kwargs)
         return decode_invocation_result(raw_result)
 
-    def invoke_function(self, script_hash, operation, params, **kwargs):
+    def invoke_function(self, script_hash, operation, has_type, params, **kwargs):
         """ Invokes a contract's function with given parameters and returns the result.
 
         :param script_hash: contract script hash
         :param operation: name of the operation to invoke
         :param params: list of paramaters to be passed in to the smart contract
+        :param has_type: whether or not the type is included with the params
         :type script_hash: str
         :type operation: str
         :type params: list
+        :type has_type: bool
         :return: result of the invocation
         :rtype: dictionary
 
         """
-        contract_params = encode_invocation_params(params)
+        contract_params = encode_invocation_params(has_type=has_type, params=params)
+        print(f'CONTRACT PARAMS: {contract_params}')
         raw_result = self._call(JSONRPCMethods.INVOKE_FUNCTION.value, [script_hash, operation, contract_params, ],
                                 **kwargs)
+        print(f'RAW RESULT: {raw_result}')
         return decode_invocation_result(raw_result)
 
     def invoke_script(self, script, **kwargs):
@@ -354,6 +360,7 @@ class Client:
         # Ensures the response body can be deserialized to JSON.
         try:
             response_data = response.json()
+            print(f'RESPONSE DATA: {response_data}')
         except ValueError as e:
             raise ProtocolError(f'Unable to deserialize response body: {e}', response=response)
 
@@ -371,9 +378,10 @@ class Client:
 class ContractWrapper:
     """ Strategy class allowing to provide a high-level interface for invoking smart contracts. """
 
-    def __init__(self, client, script_hash):
+    def __init__(self, client, script_hash, has_type):
         self.client = client
         self.script_hash = script_hash
+        self.has_type = has_type
 
     def __getattribute__(self, attr):
         try:
@@ -381,16 +389,18 @@ class ContractWrapper:
         except AttributeError:
             client = super(ContractWrapper, self).__getattribute__('client')
             script_hash = super(ContractWrapper, self).__getattribute__('script_hash')
-            return ContractFunctionWrapper(client, script_hash, attr)
+            has_type = super(ContractWrapper, self).__getattribute__('has_type')
+            return ContractFunctionWrapper(client=client, script_hash=script_hash, has_type=has_type, funcname=attr)
 
 
 class ContractFunctionWrapper:
     """ Strategy class allowing to easily invoke smart contract functions. """
 
-    def __init__(self, client, script_hash, funcname):
+    def __init__(self, client, script_hash, funcname, has_type):
         self.client = client
         self.script_hash = script_hash
         self.funcname = funcname
+        self.has_type = has_type
 
     def __call__(self, *args):
-        return self.client.invoke_function(self.script_hash, self.funcname, args)
+        return self.client.invoke_function(self.script_hash, self.funcname, self.has_type, args)
