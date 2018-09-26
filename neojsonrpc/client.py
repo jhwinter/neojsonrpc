@@ -22,6 +22,13 @@ class Client:
     """ The NEO JSON-RPC client class. """
 
     def __init__(self, host=None, port=None, tls=False, http_max_retries=None):
+        """ Initializes the Client used to connect to the blockchain
+
+        :param str host: host to connect to
+        :param int port: port to access
+        :param bool tls: whether or not to us Transport Layer Security Protocol
+        :param int http_max_retries: maximum amount of times the client will try to connect to a peer before it quits
+        """
         # Initializes attributes related to the client settings (host, port, etc).
         self.host = host or 'localhost'
         self.port = port or 30333
@@ -35,6 +42,10 @@ class Client:
         # after each request made to the JSON-RPC endpoint.
         self._id_counter = 0
 
+    # TODO: I want to make the hosts/ports more dynamic for for_mainnet() and for_testnet()
+    # I will probably try to use this project https://github.com/jhwinter/neo-python-protocol-maker to help keep the
+    # hosts/ports constantly updated. The client wasn't working when I first downloaded this project due to the
+    # hosts being down
     @classmethod
     def for_mainnet(cls):
         """ Creates a ``Client`` instance for use with the NEO Main Net. """
@@ -45,7 +56,7 @@ class Client:
         """ Creates a ``Client`` instance for use with the NEO Test Net. """
         return cls(host='seed3.neo.org', port=20332)
 
-    def contract(self, script_hash, has_type):
+    def contract(self, script_hash):
         """ Returns a ``ContractWrapper`` instance allowing to easily invoke contract functions.
 
         This method allows to invoke smart contract functions as if they were Python class instance
@@ -53,19 +64,19 @@ class Client:
 
         .. code-block:: python
 
+            >>> client = Client.for_testnet()
             >>> contract = client.contract('34af1b6634fcd7cfcff0158965b18601d3837e32')
             >>> contract.symbol()
             {...}
             >>> contract.getBalance('<address>')
             {...}
 
-        :param script_hash: contract script hash
-        :type script_hash: str
+        :param str script_hash: contract script hash
         :return: :class:`ContractWrapper <ContractWrapper>` object
         :rtype: neojsonrpc.client.ContractWrapper
 
         """
-        return ContractWrapper(self, script_hash, has_type)
+        return ContractWrapper(self, script_hash)
 
     ####################
     # JSON-RPC METHODS #
@@ -74,8 +85,7 @@ class Client:
     def get_account_state(self, address, **kwargs):
         """ Returns the account state information associated with a specific address.
 
-        :param address: a 34-bit length address (eg. AJBENSwajTzQtwyJFkiJSv7MAaaMc7DsRz)
-        :type address: str
+        :param str address: a 34-bit length address (eg. AJBENSwajTzQtwyJFkiJSv7MAaaMc7DsRz)
         :return: dictionary containing the account state information
         :rtype: dict
 
@@ -85,10 +95,9 @@ class Client:
     def get_asset_state(self, asset_id, **kwargs):
         """ Returns the asset information associated with a specific asset ID.
 
-        :param asset_id:
+        :param str asset_id:
             an asset identifier (the transaction ID of the RegistTransaction when the asset is
             registered)
-        :type asset_id: str
         :return: dictionary containing the asset state information
         :rtype: dict
 
@@ -107,13 +116,11 @@ class Client:
     def get_block(self, block_hash, verbose=True, **kwargs):
         """ Returns the block information associated with a specific hash value or block index.
 
-        :param block_hash: a block hash value or a block index (block height)
-        :param verbose:
+        :param str or int block_hash: a block hash value or a block index (block height)
+        :param bool verbose:
             a boolean indicating whether the detailed block information should be returned in JSON
             format (otherwise the block information is returned as an hexadecimal string by the
             JSON-RPC endpoint)
-        :type block_hash: str or int
-        :type verbose: bool
         :return:
             dictionary containing the block information (or an hexadecimal string if verbose is set
             to False)
@@ -134,8 +141,7 @@ class Client:
     def get_block_hash(self, block_index, **kwargs):
         """ Returns the hash value associated with a specific block index.
 
-        :param block_index: a block index (block height)
-        :type block_index: int
+        :param int block_index: a block index (block height)
         :return: hash of the block associated with the considered index
         :rtype: str
 
@@ -145,8 +151,7 @@ class Client:
     def get_block_sys_fee(self, block_index, **kwargs):
         """ Returns the system fees associated with a specific block index.
 
-        :param block_index: a block index (block height)
-        :type block_index: int
+        :param int block_index: a block index (block height)
         :return: system fees of the block, expressed in NeoGas units
         :rtype: str
 
@@ -165,8 +170,7 @@ class Client:
     def get_contract_state(self, script_hash, **kwargs):
         """ Returns the contract information associated with a specific script hash.
 
-        :param script_hash: contract script hash
-        :type script_hash: str
+        :param str script_hash: contract script hash
         :return: dictionary containing the contract information
         :rtype: dict
 
@@ -185,13 +189,11 @@ class Client:
     def get_raw_transaction(self, tx_hash, verbose=True, **kwargs):
         """ Returns detailed information associated with a specific transaction hash.
 
-        :param tx_hash: transaction hash
-        :param verbose:
+        :param str tx_hash: transaction hash
+        :param bool verbose:
             a boolean indicating whether the detailed transaction information should be returned in
             JSON format (otherwise the transaction information is returned as an hexadecimal string
             by the JSON-RPC endpoint)
-        :type tx_hash: str
-        :type verbose: bool
         :return:
             dictionary containing the transaction information (or an hexadecimal string if verbose
             is set to False)
@@ -203,10 +205,8 @@ class Client:
     def get_storage(self, script_hash, key, **kwargs):
         """ Returns the value stored in the storage of a contract script hash for a given key.
 
-        :param script_hash: contract script hash
-        :param key: key to look up in the storage
-        :type script_hash: str
-        :type key: str
+        :param str script_hash: contract script hash
+        :param str key: key to look up in the storage
         :return: value associated with the storage key
         :rtype: bytearray
 
@@ -223,11 +223,8 @@ class Client:
     def get_tx_out(self, tx_hash, index, **kwargs):
         """ Returns the transaction output information corresponding to a hash and index.
 
-        :param tx_hash: transaction hash
-        :param index:
-            index of the transaction output to be obtained in the transaction (starts from 0)
-        :type tx_hash: str
-        :type index: int
+        :param str tx_hash: transaction hash
+        :param int index: index of the transaction output to be obtained in the transaction (starts from 0)
         :return: dictionary containing the transaction output
         :rtype: dict
 
@@ -258,47 +255,37 @@ class Client:
         It should be noted that the name of the function invoked in the contract should be part of
         paramaters.
 
-        :param script_hash: contract script hash
-        :param params: list of paramaters to be passed in to the smart contract
-        :param has_type: whether or not the type is included with the params
-        :type script_hash: str
-        :type params: list
-        :type has_type: str or int
+        :param str script_hash: contract script hash
+        :param bool has_type: whether or not the type is included with the params
+        :param list params: list of paramaters to be passed in to the smart contract
         :return: result of the invocation
         :rtype: dictionary
 
         """
         contract_params = encode_invocation_params(has_type=has_type, params=params)
         raw_result = self._call(JSONRPCMethods.INVOKE.value, [script_hash, contract_params, ], **kwargs)
-        return decode_invocation_result(raw_result)
+        return decode_invocation_result(result=raw_result)
 
     def invoke_function(self, script_hash, operation, has_type, params, **kwargs):
         """ Invokes a contract's function with given parameters and returns the result.
 
-        :param script_hash: contract script hash
-        :param operation: name of the operation to invoke
-        :param params: list of paramaters to be passed in to the smart contract
-        :param has_type: whether or not the type is included with the params
-        :type script_hash: str
-        :type operation: str
-        :type params: list
-        :type has_type: bool
+        :param str script_hash: contract script hash
+        :param str operation: name of the operation to invoke
+        :param bool has_type: whether or not the type is included with the params
+        :param list params: list of parematers to be passed in to the smart contract
         :return: result of the invocation
         :rtype: dictionary
 
         """
         contract_params = encode_invocation_params(has_type=has_type, params=params)
-        print(f'CONTRACT PARAMS: {contract_params}')
         raw_result = self._call(JSONRPCMethods.INVOKE_FUNCTION.value, [script_hash, operation, contract_params, ],
                                 **kwargs)
-        print(f'RAW RESULT: {raw_result}')
-        return decode_invocation_result(raw_result)
+        return decode_invocation_result(result=raw_result)
 
     def invoke_script(self, script, **kwargs):
         """ Invokes a script on the VM and returns the result.
 
-        :param script: script runnable by the VM
-        :type script: str
+        :param str script: script runnable by the VM
         :return: result of the invocation
         :rtype: dictionary
 
@@ -309,8 +296,7 @@ class Client:
     def send_raw_transaction(self, hextx, **kwargs):
         """ Broadcasts a transaction over the NEO network and returns the result.
 
-        :param hextx: hexadecimal string that has been serialized
-        :type hextx: str
+        :param str hextx: hexadecimal string that has been serialized
         :return: result of the transaction
         :rtype: bool
 
@@ -320,8 +306,7 @@ class Client:
     def validate_address(self, addr, **kwargs):
         """ Validates if the considered string is a valid NEO address.
 
-        :param addr: string containing a potential NEO address
-        :type addr: str
+        :param str addr: string containing a potential NEO address
         :return: dictionary containing the result of the verification
         :rtype: dictionary
 
@@ -333,7 +318,14 @@ class Client:
     ##################################
 
     def _call(self, method, params=None, request_id=None):
-        """ Calls the JSON-RPC endpoint. """
+        """ Calls the JSON-RPC endpoint.
+
+        :param str method: method to be called
+        :param list params: parameters to be passed
+        :param int request_id: id required to help sort clients out
+        :return: results of the invocation
+        :rtype: dict
+        """
         params = params or []
 
         # Determines which 'id' value to use and increment the counter associated with the current
@@ -351,7 +343,7 @@ class Client:
 
         # Calls the JSON-RPC endpoint!
         try:
-            response = self.session.post(url, headers=headers, data=json.dumps(payload))
+            response = self.session.post(url=url, headers=headers, data=json.dumps(payload))
             response.raise_for_status()
         except HTTPError:
             raise TransportError(f'Got unsuccessful response from server (status code: {response.status_code}',
@@ -360,7 +352,6 @@ class Client:
         # Ensures the response body can be deserialized to JSON.
         try:
             response_data = response.json()
-            print(f'RESPONSE DATA: {response_data}')
         except ValueError as e:
             raise ProtocolError(f'Unable to deserialize response body: {e}', response=response)
 
@@ -378,29 +369,51 @@ class Client:
 class ContractWrapper:
     """ Strategy class allowing to provide a high-level interface for invoking smart contracts. """
 
-    def __init__(self, client, script_hash, has_type):
+    def __init__(self, client, script_hash):
+        """ Initialize the ContractWrapper
+
+        :param Client client: Client object
+        :param str script_hash: contract's script hash
+        """
         self.client = client
         self.script_hash = script_hash
-        self.has_type = has_type
 
     def __getattribute__(self, attr):
+        """
+
+        :param attr:
+        :return:
+        """
         try:
             return super(ContractWrapper, self).__getattribute__(attr)
         except AttributeError:
             client = super(ContractWrapper, self).__getattribute__('client')
             script_hash = super(ContractWrapper, self).__getattribute__('script_hash')
-            has_type = super(ContractWrapper, self).__getattribute__('has_type')
-            return ContractFunctionWrapper(client=client, script_hash=script_hash, has_type=has_type, funcname=attr)
+            return ContractFunctionWrapper(client=client, script_hash=script_hash, funcname=attr)
 
 
 class ContractFunctionWrapper:
     """ Strategy class allowing to easily invoke smart contract functions. """
 
-    def __init__(self, client, script_hash, funcname, has_type):
+    def __init__(self, client, script_hash, funcname):
+        """ Initialize the ContractFunctionWrapper
+
+        :param Client client: client used to connect to the JSON-RPC endpoints
+        :param str script_hash: script hash of the contract
+        :param str funcname: contract operation to be performed
+        """
         self.client = client
         self.script_hash = script_hash
         self.funcname = funcname
-        self.has_type = has_type
 
-    def __call__(self, *args):
-        return self.client.invoke_function(self.script_hash, self.funcname, self.has_type, args)
+    def __call__(self, has_type=False, *args):
+        """ This is executed when someone tries to execute a contract's operation
+
+        :param bool has_type:
+            whether or not the user is passing in the 'type' along with the 'value'.
+            if True, args must all be dict types
+        :param args:
+        :return: results of the function invocation
+        """
+        has_type = has_type or False
+        return self.client.invoke_function(self.script_hash, self.funcname, has_type, args)

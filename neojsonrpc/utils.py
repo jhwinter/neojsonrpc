@@ -14,14 +14,24 @@ from .constants import ContractParameterTypes
 
 
 def is_hash256(s):
-    """ Returns True if the considered string is a valid SHA256 hash. """
+    """ Returns True if the considered string is a valid SHA256 hash.
+
+    :param str s: the considered string
+    :return: Returns True if the considered string is a valid SHA256 hash.
+    :rtype: bool
+    """
     if not s or not isinstance(s, str):
         return False
     return re.match('^[0-9A-F]{64}$', s.strip(), re.IGNORECASE)
 
 
 def is_hash160(s):
-    """ Returns True if the considered string is a valid RIPEMD160 hash. """
+    """ Returns True if the considered string is a valid RIPEMD160 hash.
+
+    :param str s: the considered string
+    :return: Returns True if the considered string is a valid RIPEMD160 hash.
+    :rtype: bool
+    """
     if not s or not isinstance(s, str):
         return False
     if not len(s) == 40:
@@ -33,7 +43,12 @@ def is_hash160(s):
 
 
 def encode_invocation_params(has_type=False, params=None):
-    """ Returns a list of paramaters meant to be passed to JSON-RPC endpoints. """
+    """ Returns a list of parameters meant to be passed to JSON-RPC endpoints.
+
+    :param bool has_type: whether or not the user has defined the 'type' of the 'value' they're passing
+    :param list params: list of parameters
+    :return: Returns a list of parameters meant to be passed to JSON-RPC endpoints.
+    """
     final_params = []
     for p in params:
         if has_type and isinstance(p, dict):
@@ -52,30 +67,36 @@ def encode_invocation_params(has_type=False, params=None):
             elif isinstance(p, str):
                 final_params.append({'type': ContractParameterTypes.STRING.value, 'value': p})
             elif isinstance(p, list):
-                innerp = encode_invocation_params(p)
+                innerp = encode_invocation_params(params=p)
                 final_params.append({'type': ContractParameterTypes.ARRAY.value, 'value': innerp})
     return final_params
 
 
 def decode_invocation_result(result):
-    """ Tries to decode the values embedded in an invocation result dictionary. """
+    """ Tries to decode the values embedded in an invocation result dictionary.
+
+    :param dict result: the results returned by the JSON-RPC query
+    :return: the decoded values embedded in the invocation result dictionary
+    :rtype: dict
+    """
     if 'stack' not in result:
         return result
     result = copy.deepcopy(result)
-    result['stack'] = _decode_invocation_result_stack(result['stack'])
+    result['stack'] = _decode_invocation_result_stack(stack=result['stack'])
     return result
 
 
 def _decode_invocation_result_stack(stack):
+    """ Decodes the values in the stack
+
+    :param list stack:
+    :return: list of stack results
+    :rtype: list
+    """
     stack = copy.deepcopy(stack)
     for value_dict in stack:
-        print(f'{value_dict}')
         if value_dict['type'] == 'Array':
-            value_dict['value'] = _decode_invocation_result_stack(value_dict['value'])
-        elif value_dict['type'] == 'Integer':
-            int_value = int(float(value_dict['value']))
-            value_dict['value'] = int_value
-            # value_dict['value'] = int_value.to_bytes((int_value.bit_length() + 7) // 8, 'little')
+            value_dict['value'] = _decode_invocation_result_stack(stack=value_dict['value'])
         elif value_dict['type'] == 'ByteArray':
             value_dict['value'] = bytearray(binascii.unhexlify(value_dict['value'].encode('utf-8')))
     return stack
