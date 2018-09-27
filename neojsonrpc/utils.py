@@ -45,7 +45,8 @@ def is_hash160(s):
 def encode_invocation_params(has_type=False, params=None):
     """ Returns a list of parameters meant to be passed to JSON-RPC endpoints.
 
-    :param bool has_type: whether or not the user has defined the 'type' of the 'value' they're passing
+    :param bool has_type: whether or not the user has defined the 'type' of the 'value' they're
+    passing
     :param list params: list of parameters
     :return: Returns a list of parameters meant to be passed to JSON-RPC endpoints.
     """

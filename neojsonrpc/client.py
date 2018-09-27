@@ -27,7 +27,8 @@ class Client:
         :param str host: host to connect to
         :param int port: port to access
         :param bool tls: whether or not to us Transport Layer Security Protocol
-        :param int http_max_retries: maximum amount of times the client will try to connect to a peer before it quits
+        :param int http_max_retries: maximum amount of times the client will try to connect to a
+        peer before it quits
         """
         # Initializes attributes related to the client settings (host, port, etc).
         self.host = host or 'localhost'
@@ -43,8 +44,10 @@ class Client:
         self._id_counter = 0
 
     # TODO: I want to make the hosts/ports more dynamic for for_mainnet() and for_testnet()
-    # I will probably try to use this project https://github.com/jhwinter/neo-python-protocol-maker to help keep the
-    # hosts/ports constantly updated. The client wasn't working when I first downloaded this project due to the
+    # I will probably try to use this project
+    # https://github.com/jhwinter/neo-python-protocol-maker to help keep the
+    # hosts/ports constantly updated. The client wasn't working when I first downloaded this
+    # project due to the
     # hosts being down
     @classmethod
     def for_mainnet(cls):
@@ -127,7 +130,8 @@ class Client:
         :rtype: dict or str
 
         """
-        return self._call(JSONRPCMethods.GET_BLOCK.value, params=[block_hash, int(verbose), ], **kwargs)
+        return self._call(JSONRPCMethods.GET_BLOCK.value, params=[block_hash, int(verbose), ],
+                          **kwargs)
 
     def get_block_count(self, **kwargs):
         """ Returns the number of blocks in the chain.
@@ -200,7 +204,8 @@ class Client:
         :rtype: dict or str
 
         """
-        return self._call(JSONRPCMethods.GET_RAW_TRANSACTION.value, params=[tx_hash, int(verbose), ], **kwargs)
+        return self._call(JSONRPCMethods.GET_RAW_TRANSACTION.value,
+                          params=[tx_hash, int(verbose), ], **kwargs)
 
     def get_storage(self, script_hash, key, **kwargs):
         """ Returns the value stored in the storage of a contract script hash for a given key.
@@ -212,7 +217,8 @@ class Client:
 
         """
         hexkey = binascii.hexlify(key.encode('utf-8')).decode('utf-8')
-        hexresult = self._call(JSONRPCMethods.GET_STORAGE.value, params=[script_hash, hexkey, ], **kwargs)
+        hexresult = self._call(JSONRPCMethods.GET_STORAGE.value, params=[script_hash, hexkey, ],
+                               **kwargs)
         try:
             assert hexresult
             result = bytearray(binascii.unhexlify(hexresult.encode('utf-8')))
@@ -224,7 +230,8 @@ class Client:
         """ Returns the transaction output information corresponding to a hash and index.
 
         :param str tx_hash: transaction hash
-        :param int index: index of the transaction output to be obtained in the transaction (starts from 0)
+        :param int index: index of the transaction output to be obtained in the transaction (
+        starts from 0)
         :return: dictionary containing the transaction output
         :rtype: dict
 
@@ -263,7 +270,8 @@ class Client:
 
         """
         contract_params = encode_invocation_params(has_type=has_type, params=params)
-        raw_result = self._call(JSONRPCMethods.INVOKE.value, [script_hash, contract_params, ], **kwargs)
+        raw_result = self._call(JSONRPCMethods.INVOKE.value, [script_hash, contract_params, ],
+                                **kwargs)
         return decode_invocation_result(result=raw_result)
 
     def invoke_function(self, script_hash, operation, has_type, params, **kwargs):
@@ -278,7 +286,8 @@ class Client:
 
         """
         contract_params = encode_invocation_params(has_type=has_type, params=params)
-        raw_result = self._call(JSONRPCMethods.INVOKE_FUNCTION.value, [script_hash, operation, contract_params, ],
+        raw_result = self._call(JSONRPCMethods.INVOKE_FUNCTION.value,
+                                [script_hash, operation, contract_params, ],
                                 **kwargs)
         return decode_invocation_result(result=raw_result)
 
@@ -346,8 +355,9 @@ class Client:
             response = self.session.post(url=url, headers=headers, data=json.dumps(payload))
             response.raise_for_status()
         except HTTPError:
-            raise TransportError(f'Got unsuccessful response from server (status code: {response.status_code}',
-                                 response=response)
+            raise TransportError(
+                f'Got unsuccessful response from server (status code: {response.status_code}',
+                response=response)
 
         # Ensures the response body can be deserialized to JSON.
         try:
@@ -361,7 +371,8 @@ class Client:
             message = response_data['error'].get('message', '')
             raise ProtocolError(f'Error[{code}] {message}', response=response, data=response_data)
         elif 'result' not in response_data:
-            raise ProtocolError('Response is empty (result field is missing)', response=response, data=response_data)
+            raise ProtocolError('Response is empty (result field is missing)', response=response,
+                                data=response_data)
 
         return response_data['result']
 
