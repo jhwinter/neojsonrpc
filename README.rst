@@ -41,7 +41,7 @@ Online browsable documentation is available at https://neojsonrpc.readthedocs.io
 Requirements
 ============
 
-Python_ 3.4+, Requests_ 2.0+.
+Python_ 3.6+, Requests_ 2.0+.
 
 Installation
 ============
@@ -87,7 +87,8 @@ You can also invoke smart contract functions using the following methods:
 
     >>> from neojsonrpc import Client
     >>> client = Client.for_testnet()
-    >>> result = client.invoke_function('34af1b6634fcd7cfcff0158965b18601d3837e32', 'symbol', [])
+    >>> result = client.invoke_function('34af1b6634fcd7cfcff0158965b18601d3837e32', False, 'symbol',
+    [])
     {'gas_consumed': '0.217',
      'stack': [{'type': 'ByteArray', 'value': bytearray(b'TKN')}],
      'state': 'HALT, BREAK'}
@@ -96,6 +97,16 @@ You can also invoke smart contract functions using the following methods:
     {'gas_consumed': '0.217',
      'stack': [{'type': 'ByteArray', 'value': bytearray(b'TKN')}],
      'state': 'HALT, BREAK'}
+    >>> client.invoke_function('9aff1e08aea2048a26a3d2ddbb3df495b932b1e7', True, 'balanceOf', [{
+    'type': 5, 'value': '056320a11ec9b0e1c6645f5b25cf7b2fc354fd49'}])
+    {'state': 'HALT, BREAK',
+    'gas_consumed': '0.345',
+    'stack': [{'type': 'ByteArray', 'value': bytearray(b'\x00P\xdb\xbb\xa6!')}]}
+    >>> client.contract('9aff1e08aea2048a26a3d2ddbb3df495b932b1e7').balanceOf(True,
+    {'type': 5, 'value': '056320a11ec9b0e1c6645f5b25cf7b2fc354fd49'})
+    {'state': 'HALT, BREAK',
+    'gas_consumed': '0.345',
+    'stack': [{'type': 'ByteArray', 'value': bytearray(b'\x00P\xdb\xbb\xa6!')}]}
 
 Authors
 =======

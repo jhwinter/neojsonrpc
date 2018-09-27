@@ -103,6 +103,12 @@ simple example using the ``invoke_function`` method:
      'stack': [{'type': 'ByteArray', 'value': bytearray(b'TKN')}],
      'state': 'HALT, BREAK'}
 
+    >>> client.invoke_function('9aff1e08aea2048a26a3d2ddbb3df495b932b1e7', True, 'balanceOf', [{
+    'type': 5, 'value': '056320a11ec9b0e1c6645f5b25cf7b2fc354fd49'}])
+    {'state': 'HALT, BREAK',
+    'gas_consumed': '0.345',
+    'stack': [{'type': 'ByteArray', 'value': bytearray(b'\x00P\xdb\xbb\xa6!')}]}
+
 It should be noted that NeoJsonRPC provides a more high-level interface for interacting with
 contract fonctions as if they were Python class instance methods:
 
@@ -113,3 +119,9 @@ contract fonctions as if they were Python class instance methods:
     {'gas_consumed': '0.217',
      'stack': [{'type': 'ByteArray', 'value': bytearray(b'TKN')}],
      'state': 'HALT, BREAK'}
+
+    >>> client.contract('9aff1e08aea2048a26a3d2ddbb3df495b932b1e7').balanceOf(True,
+    {'type': 5, 'value': '056320a11ec9b0e1c6645f5b25cf7b2fc354fd49'})
+    {'state': 'HALT, BREAK',
+    'gas_consumed': '0.345',
+    'stack': [{'type': 'ByteArray', 'value': bytearray(b'\x00P\xdb\xbb\xa6!')}]}

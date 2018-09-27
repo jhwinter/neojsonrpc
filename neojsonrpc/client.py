@@ -220,10 +220,8 @@ class Client:
         hexkey = binascii.hexlify(key.encode('utf-8')).decode('utf-8')
         hexresult = self._call(JSONRPCMethods.GET_STORAGE.value, [script_hash, hexkey], **kwargs)
         try:
-            print(f'get_storage HEXRESULT: {hexresult}')
             assert hexresult
             result = bytearray(binascii.unhexlify(hexresult.encode('utf-8')))
-            print(f'RESULT: {result}')
         except AssertionError:
             result = hexresult
         return result
@@ -352,10 +350,7 @@ class Client:
 
         # Calls the JSON-RPC endpoint!
         try:
-            print(f'REQUEST: {json.dumps(payload)}'
-                  f'HEADERS: {self.session.headers}    url: {url}')
             response = self.session.post(url=url, data=json.dumps(payload))
-            print(f'REQUEST: {response.content}')
             response.raise_for_status()
         except HTTPError:
             raise TransportError(
