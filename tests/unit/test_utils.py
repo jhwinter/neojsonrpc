@@ -17,32 +17,32 @@ def test_is_hash160_helper_works():
 
 class TestEncodeInvocationParamsHelper:
     def test_can_encode_a_boolean(self):
-        assert encode_invocation_params([True, False, ]) == \
+        assert encode_invocation_params(True, [True, False, ]) == \
             [{'type': 'Boolean', 'value': True}, {'type': 'Boolean', 'value': False}, ]
 
     def test_can_encode_an_integer(self):
-        assert encode_invocation_params([42, ]) == [{'type': 'Integer', 'value': 42}, ]
+        assert encode_invocation_params(True, [42, ]) == [{'type': 'Integer', 'value': 42}, ]
 
     def test_can_encode_a_hash256(self):
-        assert encode_invocation_params(
+        assert encode_invocation_params(True,
             ['936a185caaa266bb9cbe981e9e05cb78cd732b0b3280eb944412bb6f8f8f07af', ]) == \
             [{'type': 'Hash256',
               'value': '936a185caaa266bb9cbe981e9e05cb78cd732b0b3280eb944412bb6f8f8f07af'}, ]
 
     def test_can_encode_a_hash160(self):
-        assert encode_invocation_params(
+        assert encode_invocation_params(True,
             ['98c615784ccb5fe5936fbc0cbe9dfdb408d92f0f', ]) == \
             [{'type': 'Hash160', 'value': '98c615784ccb5fe5936fbc0cbe9dfdb408d92f0f'}, ]
 
     def test_can_encode_a_byte_array(self):
-        assert encode_invocation_params([bytearray('test'.encode('utf-8')), ]) == \
+        assert encode_invocation_params(True, [bytearray('test'.encode('utf-8')), ]) == \
             [{'type': 'ByteArray', 'value': bytearray('test'.encode('utf-8'))}, ]
 
     def test_can_encode_a_string(self):
-        assert encode_invocation_params(['Hello', ]) == [{'type': 'String', 'value': 'Hello'}, ]
+        assert encode_invocation_params(True, ['Hello', ]) == [{'type': 'String', 'value': 'Hello'}, ]
 
     def test_can_encode_an_array(self):
-        assert encode_invocation_params([[1, 3, 6], ]) == \
+        assert encode_invocation_params(True, [[1, 3, 6], ]) == \
             [{'type': 'Array',
               'value': [{'type': 'Integer', 'value': 1}, {'type': 'Integer', 'value': 3},
                         {'type': 'Integer', 'value': 6}]}]
@@ -91,21 +91,5 @@ class TestDecodeInvocationResultHelper:
                 'stack': [{'type': 'Array',
                            'value': [{'type': 'ByteArray',
                                       'value': bytearray(b'https://neo.org')}]}],
-                'state': 'HALT, BREAK',
-                'tx': '00000', }
-
-    def test_can_decode_integer_values(self):
-        result = {
-            'gas_consumed': '0.334',
-            'script': '00000',
-            'stack': [{'type': 'Integer', 'value': '4'}],
-            'state': 'HALT, BREAK',
-            'tx': '00000',
-        }
-        assert decode_invocation_result(result) == \
-            {
-                'gas_consumed': '0.334',
-                'script': '00000',
-                'stack': [{'type': 'Integer', 'value': 4}],
                 'state': 'HALT, BREAK',
                 'tx': '00000', }
