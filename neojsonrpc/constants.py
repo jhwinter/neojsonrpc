@@ -70,13 +70,13 @@ class JSONRPCMethods(Enum):
 
     # The 'invoke' method allows to invoke a contract (associated with a specific script hash) with
     # potential parameters and to return the result. It should be noted that calling this method
-    # does not affect the blockchain in any way: the targetted contract is executed with the given
+    # does not affect the blockchain in any way: the targeted contract is executed with the given
     # parameters but the contract's storage remain unchanged.
     INVOKE = 'invoke'
 
     # The 'invokefunction' method allows to invoke a contract (associated with a specific script
     # hash) by specifying an operation and potential parameters. It should be noted that calling
-    # this method does not affect the blockchain in any way: the targetted contract is executed with
+    # this method does not affect the blockchain in any way: the targeted contract is executed with
     # the given parameters but the contract's storage remain unchanged.
     INVOKE_FUNCTION = 'invokefunction'
 

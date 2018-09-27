@@ -51,6 +51,8 @@ def encode_invocation_params(has_type=False, params=None):
     :return: Returns a list of parameters meant to be passed to JSON-RPC endpoints.
     """
     final_params = []
+    if has_type and isinstance(params, dict):
+        final_params.append(params)
     for p in params:
         if has_type and isinstance(p, dict):
             final_params.append(p)
@@ -68,7 +70,10 @@ def encode_invocation_params(has_type=False, params=None):
             elif isinstance(p, str):
                 final_params.append({'type': ContractParameterTypes.STRING.value, 'value': p})
             elif isinstance(p, list):
-                innerp = encode_invocation_params(params=p)
+                if p and isinstance(p[0], dict) and 'type' in p[0]:
+                    innerp = encode_invocation_params(has_type=True, params=p)
+                else:
+                    innerp = encode_invocation_params(params=p)
                 final_params.append({'type': ContractParameterTypes.ARRAY.value, 'value': innerp})
     return final_params
 

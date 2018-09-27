@@ -36,6 +36,7 @@ class Client:
         self.tls = tls
         self.session = requests.Session()
         self.session.mount(self.host, HTTPAdapter(max_retries=http_max_retries or 3))
+        self.session.headers = {'Content-Type': 'application/json'}
 
         # Initializes an "ID counter" that'll be used to forge each request to the JSON-RPC
         # endpoint. The "id" parameter is "required" in order to help clients sort responses out.
@@ -57,7 +58,8 @@ class Client:
     @classmethod
     def for_testnet(cls):
         """ Creates a ``Client`` instance for use with the NEO Test Net. """
-        return cls(host='seed3.neo.org', port=20332)
+        # return cls(host='seed3.neo.org', port=20332)
+        return cls(host='test5.cityofzion.io', port=443)
 
     def contract(self, script_hash):
         """ Returns a ``ContractWrapper`` instance allowing to easily invoke contract functions.
@@ -93,7 +95,7 @@ class Client:
         :rtype: dict
 
         """
-        return self._call(JSONRPCMethods.GET_ACCOUNT_STATE.value, params=[address, ], **kwargs)
+        return self._call(JSONRPCMethods.GET_ACCOUNT_STATE.value, [address], **kwargs)
 
     def get_asset_state(self, asset_id, **kwargs):
         """ Returns the asset information associated with a specific asset ID.
@@ -105,7 +107,7 @@ class Client:
         :rtype: dict
 
         """
-        return self._call(JSONRPCMethods.GET_ASSET_STATE.value, params=[asset_id, ], **kwargs)
+        return self._call(JSONRPCMethods.GET_ASSET_STATE.value, [asset_id], **kwargs)
 
     def get_best_block_hash(self, **kwargs):
         """ Returns the hash of the tallest block in the main chain.
@@ -130,8 +132,7 @@ class Client:
         :rtype: dict or str
 
         """
-        return self._call(JSONRPCMethods.GET_BLOCK.value, params=[block_hash, int(verbose), ],
-                          **kwargs)
+        return self._call(JSONRPCMethods.GET_BLOCK.value, [block_hash, int(verbose)], **kwargs)
 
     def get_block_count(self, **kwargs):
         """ Returns the number of blocks in the chain.
@@ -150,7 +151,7 @@ class Client:
         :rtype: str
 
         """
-        return self._call(JSONRPCMethods.GET_BLOCK_HASH.value, [block_index, ], **kwargs)
+        return self._call(JSONRPCMethods.GET_BLOCK_HASH.value, [block_index], **kwargs)
 
     def get_block_sys_fee(self, block_index, **kwargs):
         """ Returns the system fees associated with a specific block index.
@@ -160,7 +161,7 @@ class Client:
         :rtype: str
 
         """
-        return self._call(JSONRPCMethods.GET_BLOCK_SYS_FEE.value, [block_index, ], **kwargs)
+        return self._call(JSONRPCMethods.GET_BLOCK_SYS_FEE.value, [block_index], **kwargs)
 
     def get_connection_count(self, **kwargs):
         """ Returns the current number of connections for the considered node.
@@ -179,7 +180,7 @@ class Client:
         :rtype: dict
 
         """
-        return self._call(JSONRPCMethods.GET_CONTRACT_STATE.value, [script_hash, ], **kwargs)
+        return self._call(JSONRPCMethods.GET_CONTRACT_STATE.value, [script_hash], **kwargs)
 
     def get_raw_mem_pool(self, **kwargs):
         """ Returns a list of unconfirmed transactions in memory associated with the node.
@@ -204,8 +205,8 @@ class Client:
         :rtype: dict or str
 
         """
-        return self._call(JSONRPCMethods.GET_RAW_TRANSACTION.value,
-                          params=[tx_hash, int(verbose), ], **kwargs)
+        return self._call(JSONRPCMethods.GET_RAW_TRANSACTION.value, [tx_hash, int(verbose)],
+                          **kwargs)
 
     def get_storage(self, script_hash, key, **kwargs):
         """ Returns the value stored in the storage of a contract script hash for a given key.
@@ -217,11 +218,12 @@ class Client:
 
         """
         hexkey = binascii.hexlify(key.encode('utf-8')).decode('utf-8')
-        hexresult = self._call(JSONRPCMethods.GET_STORAGE.value, params=[script_hash, hexkey, ],
-                               **kwargs)
+        hexresult = self._call(JSONRPCMethods.GET_STORAGE.value, [script_hash, hexkey], **kwargs)
         try:
+            print(f'get_storage HEXRESULT: {hexresult}')
             assert hexresult
             result = bytearray(binascii.unhexlify(hexresult.encode('utf-8')))
+            print(f'RESULT: {result}')
         except AssertionError:
             result = hexresult
         return result
@@ -236,7 +238,7 @@ class Client:
         :rtype: dict
 
         """
-        return self._call(JSONRPCMethods.GET_TX_OUT.value, params=[tx_hash, index, ], **kwargs)
+        return self._call(JSONRPCMethods.GET_TX_OUT.value, [tx_hash, index], **kwargs)
 
     def get_peers(self, **kwargs):
         """ Returns a list of nodes that the node is currently connected/disconnected from.
@@ -260,35 +262,34 @@ class Client:
         """ Invokes a contract with given parameters and returns the result.
 
         It should be noted that the name of the function invoked in the contract should be part of
-        paramaters.
+        parameters.
 
         :param str script_hash: contract script hash
         :param bool has_type: whether or not the type is included with the params
-        :param list params: list of paramaters to be passed in to the smart contract
+        :param list params: list of parameters to be passed in to the smart contract
         :return: result of the invocation
         :rtype: dictionary
 
         """
         contract_params = encode_invocation_params(has_type=has_type, params=params)
-        raw_result = self._call(JSONRPCMethods.INVOKE.value, [script_hash, contract_params, ],
+        raw_result = self._call(JSONRPCMethods.INVOKE.value, [script_hash, contract_params],
                                 **kwargs)
         return decode_invocation_result(result=raw_result)
 
-    def invoke_function(self, script_hash, operation, has_type, params, **kwargs):
+    def invoke_function(self, script_hash, has_type, operation, params, **kwargs):
         """ Invokes a contract's function with given parameters and returns the result.
 
         :param str script_hash: contract script hash
-        :param str operation: name of the operation to invoke
         :param bool has_type: whether or not the type is included with the params
-        :param list params: list of parematers to be passed in to the smart contract
+        :param str operation: name of the operation to invoke
+        :param list params: list of parameters to be passed in to the smart contract
         :return: result of the invocation
         :rtype: dictionary
 
         """
         contract_params = encode_invocation_params(has_type=has_type, params=params)
         raw_result = self._call(JSONRPCMethods.INVOKE_FUNCTION.value,
-                                [script_hash, operation, contract_params, ],
-                                **kwargs)
+                                [script_hash, operation, contract_params], **kwargs)
         return decode_invocation_result(result=raw_result)
 
     def invoke_script(self, script, **kwargs):
@@ -299,7 +300,7 @@ class Client:
         :rtype: dictionary
 
         """
-        raw_result = self._call(JSONRPCMethods.INVOKE_SCRIPT.value, [script, ], **kwargs)
+        raw_result = self._call(JSONRPCMethods.INVOKE_SCRIPT.value, [script], **kwargs)
         return decode_invocation_result(raw_result)
 
     def send_raw_transaction(self, hextx, **kwargs):
@@ -310,7 +311,7 @@ class Client:
         :rtype: bool
 
         """
-        return self._call(JSONRPCMethods.SEND_RAW_TRANSACTION.value, [hextx, ], **kwargs)
+        return self._call(JSONRPCMethods.SEND_RAW_TRANSACTION.value, [hextx], **kwargs)
 
     def validate_address(self, addr, **kwargs):
         """ Validates if the considered string is a valid NEO address.
@@ -320,7 +321,7 @@ class Client:
         :rtype: dictionary
 
         """
-        return self._call(JSONRPCMethods.VALIDATE_ADDRESS.value, [addr, ], **kwargs)
+        return self._call(JSONRPCMethods.VALIDATE_ADDRESS.value, [addr], **kwargs)
 
     ##################################
     # PRIVATE METHODS AND PROPERTIES #
@@ -345,14 +346,16 @@ class Client:
 
         # Prepares the payload and the headers that will be used to forge the request.
         payload = {'jsonrpc': '2.0', 'method': method, 'params': params, 'id': rid}
-        headers = {'Content-Type': 'application/json'}
         scheme = 'https' if self.tls else 'http'
         url = f'{scheme}://{self.host}:{self.port}'
         response = ''  # setting this to an empty string to remove a warning message
 
         # Calls the JSON-RPC endpoint!
         try:
-            response = self.session.post(url=url, headers=headers, data=json.dumps(payload))
+            print(f'REQUEST: {json.dumps(payload)}'
+                  f'HEADERS: {self.session.headers}    url: {url}')
+            response = self.session.post(url=url, data=json.dumps(payload))
+            print(f'REQUEST: {response.content}')
             response.raise_for_status()
         except HTTPError:
             raise TransportError(
@@ -423,8 +426,7 @@ class ContractFunctionWrapper:
         :param bool has_type:
             whether or not the user is passing in the 'type' along with the 'value'.
             if True, args must all be dict types
-        :param args:
+        :param list args:
         :return: results of the function invocation
         """
-        has_type = has_type or False
-        return self.client.invoke_function(self.script_hash, self.funcname, has_type, args)
+        return self.client.invoke_function(self.script_hash, has_type, self.funcname, args)
