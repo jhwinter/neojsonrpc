@@ -17,7 +17,11 @@ from .constants import JSONRPCMethods
 from .exceptions import ProtocolError, TransportError
 from .utils import decode_invocation_result, encode_invocation_params
 
-
+# TODO: add multirequest JSON support
+# From https://github.com/CityOfZion/neo-python/blob/978f77922247d2d85c63dfe8db66e856fcb56582/neo/api/JSONRPC/JsonRpcApi.py#L118
+# {"jsonrpc": "2.0", "id": 5, "method": "getblockcount", "params": []}
+# or multiple requests in 1 transaction
+# [{"jsonrpc": "2.0", "id": 1, "method": "getblock", "params": [10], {"jsonrpc": "2.0", "id": 2, "method": "getblock", "params": [10,1]}
 class Client:
     """ The NEO JSON-RPC client class. """
 
