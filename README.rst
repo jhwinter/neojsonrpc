@@ -1,31 +1,6 @@
 NeoJsonRPC
 ##########
 
-.. image:: https://readthedocs.org/projects/neojsonrpc/badge/?version=stable
-    :target: https://neojsonrpc.readthedocs.org/en/stable/
-    :alt: Documentation Status
-
-.. image:: https://img.shields.io/pypi/l/neojsonrpc.svg
-    :target: https://pypi.python.org/pypi/neojsonrpc/
-    :alt: License
-
-.. image:: https://img.shields.io/pypi/pyversions/neojsonrpc.svg
-    :target: https://pypi.python.org/pypi/neojsonrpc
-
-.. image:: https://img.shields.io/pypi/v/neojsonrpc.svg
-    :target: https://pypi.python.org/pypi/neojsonrpc/
-    :alt: Latest Version
-
-.. image:: https://img.shields.io/travis/ellmetha/neojsonrpc.svg
-    :target: https://travis-ci.org/ellmetha/neojsonrpc
-    :alt: Build status
-
-.. image:: https://img.shields.io/codecov/c/github/ellmetha/neojsonrpc.svg
-    :target: https://codecov.io/github/ellmetha/neojsonrpc
-    :alt: Codecov status
-
-|
-
 **NeoJsonRPC** is a Python JSON-RPC client for the NEO blockchain. It implements the JSON-RPC
 methods of the API interface provided by NEO nodes (minus the methods requiring an opened wallet).
 The client also provides a high-level interface to invoke contract methods on the NEO blockchain.
@@ -50,7 +25,7 @@ To install NeoJsonRPC, please use pip_ (or pipenv_) as follows:
 
 .. code-block:: shell
 
-    $ pip install neojsonrpc
+    $ pip install git+https://github.com/jhwinter/neojsonrpc.git
 
 Basic usage
 ===========
@@ -111,7 +86,7 @@ You can also invoke smart contract functions using the following methods:
 Authors
 =======
 
-Morgan Aubert (`@ellmetha <https://github.com/ellmetha>`_) and contributors_. See ``AUTHORS`` for
+Morgan Aubert (`@ellmetha <https://github.com/ellmetha>`_), Jonathan Winter (`@jhwinter <https://github.com/jhwinter>`_)and contributors_. See ``AUTHORS`` for
 more details.
 
 .. _contributors: https://github.com/ellmetha/neojsonrpc/contributors
